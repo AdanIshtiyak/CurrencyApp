@@ -29,10 +29,9 @@ namespace CurrencyApp
       services.AddScoped<CurrencyServices>();
 
       //ViewModels
-      services.AddTransient<MainWindowViewModel>();
       services.AddTransient<CurrencyListViewModel>();
-      services.AddTransient<AddCurrencyViewModel>();
-      services.AddTransient<SettingsViewModel>();
+      //services.AddTransient<AddCurrencyViewModel>();
+      //services.AddTransient<SettingsViewModel>();
 
       //Wimdows
       services.AddTransient<MainWindow>();

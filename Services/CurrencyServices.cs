@@ -2,7 +2,6 @@
 using CurrencyApp.Entity;
 using CurrencyApp.Entity.Models;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.ObjectModel;
 using System.Net.Http;
 using System.Text.Json;
 
@@ -22,40 +21,84 @@ namespace CurrencyApp.Services
       _httpClient = httpClient;
     }
 
-    public async Task<ObservableCollection<Currency>> FetchCurrencyDataAsync()
+    public async Task<List<Currency>> FetchCurrencyDataAsync()
     {
       var json = await _httpClient.GetStringAsync(_apiUrl);
       var currencyDataDto = JsonSerializer.Deserialize<CurrencyJsonDto>(json);
 
-      //Check if data for this date exist or not in db
-      var dataAt = currencyDataDto?.Date.UtcDateTime ?? null;
-      var isDataExist = await _context.CurrencyData.AnyAsync(c => c.DataAt == dataAt);
-
-      if (currencyDataDto == null || !dataAt.HasValue)
+      if (currencyDataDto == null)
         return [];
 
-      var currencyData = new CurrencyData()
-      {
-        DataAt = dataAt.Value,
-        Currencies = currencyDataDto.Valute.Select(c => new Currency()
+      var currencies = _context.Currencies;
+
+      var changedCurrenciesIds = currencies
+        .Where(c => c.IsDeleted || c.IsCustom)
+        .Select(c => c.Id)
+        .ToList();
+
+      var currenciesForUpdate = currencies
+        .Where(c => !c.IsCustom && !c.IsDeleted)
+        .ToList();
+
+      var newCurrencies = currencyDataDto.Valute
+        .Select(c => c.Value)
+        .Where(c => !changedCurrenciesIds.Contains(c.Id))
+        .Select(c => new Currency()
         {
-          Id = c.Value.Id,
-          CharCode = c.Value.CharCode,
-          CurrencyDataId = 0,
-          Nominal = c.Value.Nominal,
-          NumCode = c.Value.NumCode,
-          Previous = c.Value.Previous,
-          Value = c.Value.Value
-        }).ToList()
+          Id = c.Id,
+          CharCode = c.CharCode,
+          Nominal = c.Nominal,
+          NumCode = c.NumCode,
+          Previous = c.Previous,
+          Value = c.Value
+        }).ToList();
+
+      _context.Currencies.RemoveRange(currenciesForUpdate);
+      _context.Currencies.AddRange(newCurrencies);
+      await _context.SaveChangesAsync();
+
+      var currenciesToDisplay = currencies.Where(c => !c.IsDeleted).ToList();
+
+      return currenciesToDisplay;
+    }
+
+    public async Task CreateCustomCurrency(CurrencyCreateDto createDto)
+    {
+      var currenciesIds = await _context.Currencies
+        .Where(c => !c.IsDeleted)
+        .Select(c => c.Id)
+        .AsNoTracking()
+        .ToListAsync();
+
+      if (currenciesIds.Any(c => c == createDto.Id))
+        return; //todo: Сделать вывод ошибки
+
+      var newCurrency = new Currency()
+      {
+        Id = createDto.Id,
+        CharCode = createDto.CharCode,
+        Nominal = createDto.Nominal,
+        NumCode = createDto.NumCode,
+        Value = createDto.Value,
+        Previous = createDto.Previous,
+        IsCustom = true
       };
 
-      if (!isDataExist)
-      {
-        _context.CurrencyData.Add(currencyData);
-        await _context.SaveChangesAsync();
-      }
+      _context.Currencies.Add(newCurrency);
+      await _context.SaveChangesAsync();
+    }
 
-      return new ObservableCollection<Currency>(currencyData.Currencies);
+    public async Task DeleteCurrency(int currencyInternalId)
+    {
+      var currency = await _context.Currencies.FirstOrDefaultAsync(c => c.InternalId == currencyInternalId);
+
+      if (currency == null)
+        return;
+
+      currency.IsDeleted = true;
+
+      _context.Currencies.Update(currency);
+      await _context.SaveChangesAsync();
     }
   }
 }

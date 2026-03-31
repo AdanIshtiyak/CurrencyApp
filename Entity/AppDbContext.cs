@@ -12,7 +12,6 @@ namespace CurrencyApp.Entity
     #region DbSets
 
     public DbSet<Currency> Currencies { get; set; }
-    public DbSet<CurrencyData> CurrencyData { get; set; }
 
     #endregion
   }

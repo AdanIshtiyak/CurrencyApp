@@ -7,7 +7,7 @@
       Background="{StaticResource PageBgBrush}"
       Title="Currencies">
 
-    <!--
+  <!--
     ViewModel bindings expected (CurrencyListViewModel):
       - ObservableCollection<Currency>  Currencies
       - ICommand                        RefreshCommand
@@ -16,57 +16,57 @@
     Currency model fields used:
       CharCode, NumCode, Id, Nominal, Value, Previous
       Name        — add to Currency model if needed
-      IsUserAdded — add to Currency model to distinguish user-added rows
+      IsCustom — add to Currency model to distinguish user-added rows
     -->
 
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="*"/>
+    </Grid.RowDefinitions>
 
-        <!-- ===== Page Header ===== -->
-        <Border Grid.Row="0"
+    <!-- ===== Page Header ===== -->
+    <Border Grid.Row="0"
                 Background="{StaticResource CardBrush}"
                 BorderBrush="{StaticResource BorderColorBrush}"
                 BorderThickness="0,0,0,1"
                 Padding="28,18">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
+      <Grid>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*"/>
+          <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
 
-                <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                    <TextBlock Text="Currencies"
+        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+          <TextBlock Text="Currencies"
                                FontSize="20" FontWeight="SemiBold"
                                Foreground="{StaticResource TextPrimaryBrush}"/>
-                    <TextBlock Text="Exchange rates from the Central Bank of Russia"
+          <TextBlock Text="Exchange rates from the Central Bank of Russia"
                                FontSize="12"
                                Foreground="{StaticResource TextSecondaryBrush}"
                                Margin="0,3,0,0"/>
-                </StackPanel>
+        </StackPanel>
 
-                <!-- Refresh Button — Command: RefreshCommand -->
-                <Button Grid.Column="1"
+        <!-- Refresh Button — Command: RefreshCommand -->
+        <Button Grid.Column="1"
                         Style="{StaticResource PrimaryButtonStyle}"
                         Command="{Binding RefreshCommand}"
                         VerticalAlignment="Center">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="&#x21BB;" FontSize="14"
+          <StackPanel Orientation="Horizontal">
+            <TextBlock Text="&#x21BB;" FontSize="14"
                                    VerticalAlignment="Center"
                                    Margin="0,0,7,0"/>
-                        <TextBlock Text="Refresh from API"
+            <TextBlock Text="Refresh from API"
                                    VerticalAlignment="Center"/>
-                    </StackPanel>
-                </Button>
+          </StackPanel>
+        </Button>
 
-            </Grid>
-        </Border>
+      </Grid>
+    </Border>
 
-        <!-- ===== Loading Indicator — Visible when IsLoading = true ===== -->
-        <Border Grid.Row="1"
+    <!-- ===== Loading Indicator — Visible when IsLoading = true ===== -->
+    <Border Grid.Row="1"
                 Background="#EBF5FB"
                 BorderBrush="{StaticResource AccentBrush}"
                 BorderThickness="0,0,0,2"
@@ -74,131 +74,126 @@
                 Visibility="{Binding IsLoading,
                              Converter={StaticResource BoolToVis},
                              FallbackValue=Collapsed}">
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Text="Loading data from API…"
+      <StackPanel Orientation="Horizontal">
+        <TextBlock Text="Loading data from API…"
                            FontSize="12"
                            Foreground="{StaticResource AccentBrush}"/>
-            </StackPanel>
-        </Border>
+      </StackPanel>
+    </Border>
 
-        <!-- ===== Currency DataGrid ===== -->
-        <Border Grid.Row="2" Margin="20">
-            <DataGrid ItemsSource="{Binding Currencies}"
+    <!-- ===== Currency DataGrid ===== -->
+    <Border Grid.Row="2" Margin="20">
+      <DataGrid ItemsSource="{Binding Currencies}"
                       x:Name="CurrencyGrid">
 
-                <!-- ── Code ── -->
-                <DataGrid.Columns>
+        <!-- ── Code ── -->
+        <DataGrid.Columns>
 
-                    <DataGridTemplateColumn Header="CODE" Width="90">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding CharCode}"
+          <DataGridTemplateColumn Header="CODE" Width="90">
+            <DataGridTemplateColumn.CellTemplate>
+              <DataTemplate>
+                <TextBlock Text="{Binding CharCode}"
                                            FontWeight="SemiBold"
                                            FontSize="13"
                                            Foreground="{StaticResource AccentBrush}"
                                            VerticalAlignment="Center"/>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
+              </DataTemplate>
+            </DataGridTemplateColumn.CellTemplate>
+          </DataGridTemplateColumn>
 
-                    <!-- ── Numeric Code ── -->
-                    <DataGridTextColumn Header="NUM CODE"
+          <!-- ── Numeric Code ── -->
+          <DataGridTextColumn Header="NUM CODE"
                                         Binding="{Binding NumCode}"
                                         Width="100"/>
 
-                    <!-- ── CBR ID ── -->
-                    <DataGridTextColumn Header="CBR ID"
+          <!-- ── CBR ID ── -->
+          <DataGridTextColumn Header="CBR ID"
                                         Binding="{Binding Id}"
                                         Width="110"
                                         ElementStyle="{StaticResource {x:Type TextBlock}}"/>
 
-                    <!-- ── Name (add Name property to Currency model) ── -->
-                    <DataGridTextColumn Header="NAME"
-                                        Binding="{Binding Name}"
-                                        Width="180"/>
-
-                    <!-- ── Nominal ── -->
-                    <DataGridTextColumn Header="NOMINAL"
+          <!-- ── Nominal ── -->
+          <DataGridTextColumn Header="NOMINAL"
                                         Binding="{Binding Nominal}"
                                         Width="90"/>
 
-                    <!-- ── Current Rate ── -->
-                    <DataGridTemplateColumn Header="RATE (RUB)" Width="120">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding Value, StringFormat=N4}"
+          <!-- ── Current Rate ── -->
+          <DataGridTemplateColumn Header="RATE (RUB)" Width="120">
+            <DataGridTemplateColumn.CellTemplate>
+              <DataTemplate>
+                <TextBlock Text="{Binding Value, StringFormat=N4}"
                                            FontWeight="SemiBold"
                                            VerticalAlignment="Center"/>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
+              </DataTemplate>
+            </DataGridTemplateColumn.CellTemplate>
+          </DataGridTemplateColumn>
 
-                    <!-- ── Previous Rate ── -->
-                    <DataGridTemplateColumn Header="PREV. RATE" Width="120">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding Previous, StringFormat=N4}"
+          <!-- ── Previous Rate ── -->
+          <DataGridTemplateColumn Header="PREV. RATE" Width="120">
+            <DataGridTemplateColumn.CellTemplate>
+              <DataTemplate>
+                <TextBlock Text="{Binding Previous, StringFormat=N4}"
                                            Foreground="{StaticResource TextSecondaryBrush}"
                                            VerticalAlignment="Center"/>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
+              </DataTemplate>
+            </DataGridTemplateColumn.CellTemplate>
+          </DataGridTemplateColumn>
 
-                    <!-- ── Custom Badge (add bool IsUserAdded to Currency model) ── -->
-                    <DataGridTemplateColumn Header="SOURCE" Width="90">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <Border CornerRadius="3"
+          <!-- ── Custom Badge (add bool IsCustom to Currency model) ── -->
+          <DataGridTemplateColumn Header="SOURCE" Width="90">
+            <DataGridTemplateColumn.CellTemplate>
+              <DataTemplate>
+                <Border CornerRadius="3"
                                         Padding="6,2"
                                         HorizontalAlignment="Left"
                                         VerticalAlignment="Center">
-                                    <Border.Style>
-                                        <Style TargetType="Border">
-                                            <Setter Property="Background" Value="{StaticResource AccentBrush}"/>
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding IsUserAdded}" Value="True">
-                                                    <Setter Property="Background"
+                  <Border.Style>
+                    <Style TargetType="Border">
+                      <Setter Property="Background" Value="{StaticResource AccentBrush}"/>
+                      <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsCustom}" Value="True">
+                          <Setter Property="Background"
                                                             Value="{StaticResource CustomBadgeBrush}"/>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Border.Style>
-                                    <TextBlock VerticalAlignment="Center"
+                        </DataTrigger>
+                      </Style.Triggers>
+                    </Style>
+                  </Border.Style>
+                  <TextBlock VerticalAlignment="Center"
                                                FontSize="10" FontWeight="SemiBold"
                                                Foreground="White">
-                                        <TextBlock.Style>
-                                            <Style TargetType="TextBlock"
+                    <TextBlock.Style>
+                      <Style TargetType="TextBlock"
                                                    BasedOn="{StaticResource {x:Type TextBlock}}">
-                                                <Setter Property="Text" Value="CBR"/>
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding IsUserAdded}" Value="True">
-                                                        <Setter Property="Text" Value="Custom"/>
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </TextBlock.Style>
-                                    </TextBlock>
-                                </Border>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
+                        <Setter Property="Text" Value="CBR"/>
+                        <Style.Triggers>
+                          <DataTrigger Binding="{Binding IsCustom}" Value="True">
+                            <Setter Property="Text" Value="Custom"/>
+                          </DataTrigger>
+                        </Style.Triggers>
+                      </Style>
+                    </TextBlock.Style>
+                  </TextBlock>
+                </Border>
+              </DataTemplate>
+            </DataGridTemplateColumn.CellTemplate>
+          </DataGridTemplateColumn>
 
-                    <!-- ── Delete Button — Command: DeleteCurrencyCommand ── -->
-                    <DataGridTemplateColumn Header="" Width="90">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <Button Style="{StaticResource DangerButtonStyle}"
+          <!-- ── Delete Button — Command: DeleteCurrencyCommand ── -->
+          <DataGridTemplateColumn Header="" Width="90">
+            <DataGridTemplateColumn.CellTemplate>
+              <DataTemplate>
+                <Button Style="{StaticResource DangerButtonStyle}"
                                         Content="Delete"
                                         Command="{Binding DataContext.DeleteCurrencyCommand,
                                                   RelativeSource={RelativeSource AncestorType=Page}}"
                                         CommandParameter="{Binding}"/>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
+              </DataTemplate>
+            </DataGridTemplateColumn.CellTemplate>
+          </DataGridTemplateColumn>
 
-                </DataGrid.Columns>
-            </DataGrid>
-        </Border>
+        </DataGrid.Columns>
+      </DataGrid>
+    </Border>
 
-    </Grid>
+  </Grid>
 </Page>
