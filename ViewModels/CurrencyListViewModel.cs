@@ -1,4 +1,5 @@
 ﻿using CurrencyApp.Entity.Models;
+using CurrencyApp.Interfaces;
 using CurrencyApp.Services;
 using CurrencyApp.ViewModels.Helper;
 using System.Collections.ObjectModel;
@@ -17,7 +18,7 @@ namespace CurrencyApp.ViewModels
       PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    private readonly CurrencyServices _currencyServices;
+    private readonly ICurrencyListServices _currencyListServices;
 
     private ObservableCollection<Currency> _currencies = new ObservableCollection<Currency>();
 
@@ -45,23 +46,31 @@ namespace CurrencyApp.ViewModels
       }
     }
 
-    public CurrencyListViewModel(CurrencyServices currencyServices)
+    public CurrencyListViewModel(ICurrencyListServices currencyListServices)
     {
-
-      _currencyServices = currencyServices;
+      _currencyListServices = currencyListServices;
 
       IsLoading = false;
       RefreshCommand = new AsyncRelayCommand(RefreshData);
       DeleteCurrencyCommand = new AsyncRelayCommand<Currency>(DeleteCurrency);
     }
 
-    public async Task RefreshData()
+    public async Task InitCurrencies()
+    {
+      var currencies = await _currencyListServices.GetCurrenciesAsync();
+
+      currencies.ForEach(Currencies.Add);
+    }
+
+    #region Private methods
+
+    private async Task RefreshData()
     {
       IsLoading = true;
 
       try
       {
-        var currencies = await _currencyServices.FetchCurrencyDataAsync();
+        var currencies = await _currencyListServices.FetchCurrencyDataAsync();
 
         Currencies.Clear();
         currencies.ForEach(Currencies.Add);
@@ -72,11 +81,13 @@ namespace CurrencyApp.ViewModels
       }
     }
 
-    public async Task DeleteCurrency(Currency currency)
+    private async Task DeleteCurrency(Currency currency)
     {
-      await _currencyServices.DeleteCurrency(currency.InternalId);
+      await _currencyListServices.DeleteCurrencyAsync(currency.InternalId);
 
       Currencies.Remove(currency);
     }
+
+    #endregion
   }
 }
