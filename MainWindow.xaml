@@ -7,6 +7,11 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="9*"/>
+      <ColumnDefinition Width="191*"/>
+    </Grid.ColumnDefinitions>
+    <Button Command="{Binding LoadCurrencyComand}" Grid.Column="1" Content="Button" HorizontalAlignment="Left" Margin="297,196,0,0" VerticalAlignment="Top"/>
 
-    </Grid>
+  </Grid>
 </Window>

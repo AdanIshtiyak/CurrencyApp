@@ -1,7 +1,10 @@
-﻿namespace CurrencyApp.DTOs
+﻿using System.Text.Json.Serialization;
+
+namespace CurrencyApp.DTOs
 {
   public class CurrencyJsonDetailDto
   {
+    [JsonPropertyName("ID")]
     public string Id { get; set; } = string.Empty;
     public string NumCode { get; set; } = string.Empty;
     public string CharCode { get; set; } = string.Empty;

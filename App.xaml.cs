@@ -1,4 +1,6 @@
 ﻿using CurrencyApp.Entity;
+using CurrencyApp.Services;
+using CurrencyApp.ViewModels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System.Windows;
@@ -8,7 +10,7 @@ namespace CurrencyApp
   /// <summary>
   /// Interaction logic for App.xaml
   /// </summary>
-  public partial class App : Application
+  public partial class App : System.Windows.Application
   {
     public static ServiceProvider ServiceProvider { get; private set; }
 
@@ -23,6 +25,15 @@ namespace CurrencyApp
 
       services.AddHttpClient();
 
+      //Services
+      services.AddScoped<CurrencyServices>();
+
+      //ViewModels
+      services.AddTransient<MainWindowViewModel>();
+
+      //Wimdows
+      services.AddTransient<MainWindow>();
+
       #endregion
 
       ServiceProvider = services.BuildServiceProvider();
@@ -33,8 +44,10 @@ namespace CurrencyApp
         db.Database.Migrate();
       }
 
+      var mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
+      mainWindow.Show();
+
       base.OnStartup(e);
     }
   }
-
 }

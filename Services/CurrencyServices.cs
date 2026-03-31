@@ -2,6 +2,7 @@
 using CurrencyApp.Entity;
 using CurrencyApp.Entity.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.ObjectModel;
 using System.Net.Http;
 using System.Text.Json;
 
@@ -21,21 +22,21 @@ namespace CurrencyApp.Services
       _httpClient = httpClient;
     }
 
-    public async Task<List<Currency>> FetchCurrencyDataAsync()
+    public async Task<ObservableCollection<Currency>> FetchCurrencyDataAsync()
     {
       var json = await _httpClient.GetStringAsync(_apiUrl);
       var currencyDataDto = JsonSerializer.Deserialize<CurrencyJsonDto>(json);
 
       //Check if data for this date exist or not in db
-      var dateAt = currencyDataDto?.Date.UtcDateTime ?? null;
-      var isDataExist = await _context.CurrencyData.AnyAsync(c => c.DataAt == dateAt);
+      var dataAt = currencyDataDto?.Date.UtcDateTime ?? null;
+      var isDataExist = await _context.CurrencyData.AnyAsync(c => c.DataAt == dataAt);
 
-      if (currencyDataDto != null || !dateAt.HasValue)
+      if (currencyDataDto == null || !dataAt.HasValue)
         return [];
 
       var currencyData = new CurrencyData()
       {
-        DataAt = dateAt.Value,
+        DataAt = dataAt.Value,
         Currencies = currencyDataDto.Valute.Select(c => new Currency()
         {
           Id = c.Value.Id,
@@ -54,7 +55,7 @@ namespace CurrencyApp.Services
         await _context.SaveChangesAsync();
       }
 
-      return currencyData.Currencies.ToList();
+      return new ObservableCollection<Currency>(currencyData.Currencies);
     }
   }
 }
