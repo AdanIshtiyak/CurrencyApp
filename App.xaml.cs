@@ -30,6 +30,9 @@ namespace CurrencyApp
 
       //ViewModels
       services.AddTransient<MainWindowViewModel>();
+      services.AddTransient<CurrencyListViewModel>();
+      services.AddTransient<AddCurrencyViewModel>();
+      services.AddTransient<SettingsViewModel>();
 
       //Wimdows
       services.AddTransient<MainWindow>();

@@ -1,17 +1,116 @@
-﻿<Window x:Class="CurrencyApp.MainWindow"
+<Window x:Class="CurrencyApp.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:CurrencyApp"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
-    <Grid.ColumnDefinitions>
-      <ColumnDefinition Width="9*"/>
-      <ColumnDefinition Width="191*"/>
-    </Grid.ColumnDefinitions>
-    <Button Command="{Binding LoadCurrencyComand}" Grid.Column="1" Content="Button" HorizontalAlignment="Left" Margin="297,196,0,0" VerticalAlignment="Top"/>
+        Title="Currency App — Exchange Rates"
+        Height="700" Width="1150"
+        MinHeight="600" MinWidth="900"
+        WindowStartupLocation="CenterScreen">
 
-  </Grid>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="220"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- ===================== SIDEBAR ===================== -->
+        <Border Grid.Column="0" Background="{StaticResource SidebarBrush}">
+            <DockPanel LastChildFill="False">
+
+                <!-- App Header -->
+                <Border DockPanel.Dock="Top"
+                        Background="{StaticResource SidebarHeaderBrush}"
+                        Padding="20,22,20,18">
+                    <StackPanel>
+                        <TextBlock Text="Currency App"
+                                   FontSize="17" FontWeight="Bold"
+                                   Foreground="{StaticResource TextLightBrush}"
+                                   Margin="0,0,0,4"/>
+                        <TextBlock Text="Exchange Rates · CBR"
+                                   FontSize="11"
+                                   Foreground="{StaticResource TextMutedBrush}"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Divider -->
+                <Border DockPanel.Dock="Top" Height="1"
+                        Background="{StaticResource SidebarHoverBrush}"
+                        Margin="0,6,0,6"/>
+
+                <!-- Navigation Items -->
+                <StackPanel DockPanel.Dock="Top">
+
+                    <Button x:Name="BtnCurrencies"
+                            Style="{StaticResource NavButtonStyle}"
+                            Click="BtnCurrencies_Click">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#x2261;" FontSize="17"
+                                       VerticalAlignment="Center"
+                                       Foreground="{StaticResource AccentBrush}"
+                                       Margin="0,0,12,0"/>
+                            <TextBlock Text="Currencies"
+                                       VerticalAlignment="Center"
+                                       Foreground="{StaticResource TextLightBrush}"/>
+                        </StackPanel>
+                    </Button>
+
+                    <Button x:Name="BtnAddCurrency"
+                            Style="{StaticResource NavButtonStyle}"
+                            Click="BtnAddCurrency_Click">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="+" FontSize="20"
+                                       VerticalAlignment="Center"
+                                       Foreground="{StaticResource SuccessBrush}"
+                                       Margin="0,-2,12,0"/>
+                            <TextBlock Text="Add Currency"
+                                       VerticalAlignment="Center"
+                                       Foreground="{StaticResource TextLightBrush}"/>
+                        </StackPanel>
+                    </Button>
+
+                    <Button x:Name="BtnSettings"
+                            Style="{StaticResource NavButtonStyle}"
+                            Click="BtnSettings_Click">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#x2699;" FontSize="15"
+                                       VerticalAlignment="Center"
+                                       Foreground="{StaticResource TextMutedBrush}"
+                                       Margin="0,0,12,0"/>
+                            <TextBlock Text="Settings"
+                                       VerticalAlignment="Center"
+                                       Foreground="{StaticResource TextLightBrush}"/>
+                        </StackPanel>
+                    </Button>
+
+                </StackPanel>
+
+                <!-- Last Session (bottom) -->
+                <!-- Binding: MainWindowViewModel.LastSessionDateTime (string) -->
+                <Border DockPanel.Dock="Bottom"
+                        Background="{StaticResource SidebarHeaderBrush}"
+                        Padding="20,14">
+                    <StackPanel>
+                        <TextBlock Text="LAST SESSION"
+                                   FontSize="9" FontWeight="SemiBold"
+                                   Foreground="{StaticResource TextMutedBrush}"
+                                   Margin="0,0,0,5"/>
+                        <TextBlock Text="{Binding LastSessionDateTime, FallbackValue='—'}"
+                                   FontSize="11"
+                                   Foreground="{StaticResource TextLightBrush}"
+                                   TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Border>
+
+            </DockPanel>
+        </Border>
+
+        <!-- ===================== CONTENT FRAME ===================== -->
+        <Frame Grid.Column="1"
+               x:Name="MainFrame"
+               NavigationUIVisibility="Hidden"
+               Background="{StaticResource PageBgBrush}"/>
+
+    </Grid>
 </Window>
