@@ -23,8 +23,24 @@ namespace CurrencyApp.ViewModels
 
     #region View bindings
 
-    public string CharCode { get; set; }
-    public string NumCode { get; set; }
+    public string CharCode
+    {
+      get => _charCode;
+      set
+      {
+        _charCode = value;
+        OnPropertyChanged();
+      }
+    }
+    public string NumCode
+    {
+      get => _numCode;
+      set
+      {
+        _numCode = value;
+        OnPropertyChanged();
+      }
+    }
     public string Id
     {
       get => _id;
@@ -32,19 +48,50 @@ namespace CurrencyApp.ViewModels
       {
         _id = value;
         OnPropertyChanged();
-        CanAddCurrency(Id);
       }
     }
-    public string Nominal { get; set; }
-    public string Value { get; set; }
-    public string Previous { get; set; }
-    public string ValidationMessage { get; set; }
-    public bool CanAdd
+    public string Nominal
     {
-      get => _canAdd;
+      get => _nominal;
       set
       {
-        _canAdd = value;
+        _nominal = value;
+        OnPropertyChanged();
+      }
+    }
+    public string Value
+    {
+      get => _value;
+      set
+      {
+        _value = value;
+        OnPropertyChanged();
+      }
+    }
+    public string Previous
+    {
+      get => _previous;
+      set
+      {
+        _previous = value;
+        OnPropertyChanged();
+      }
+    }
+    public bool HasValidationError
+    {
+      get => _hasValidadionError;
+      set
+      {
+        _hasValidadionError = value;
+        OnPropertyChanged();
+      }
+    }
+    public string ValidationMessage
+    {
+      get => _validationMessage;
+      set
+      {
+        _validationMessage = value;
         OnPropertyChanged();
       }
     }
@@ -56,8 +103,14 @@ namespace CurrencyApp.ViewModels
 
     #region Helper class fields
 
+    private string _charCode;
+    private string _numCode;
     private string _id;
-    private bool _canAdd;
+    private string _nominal;
+    private string _value;
+    private string _previous;
+    private bool _hasValidadionError;
+    private string _validationMessage;
     private HashSet<string> _existingIds = new();
 
     #endregion
@@ -74,7 +127,7 @@ namespace CurrencyApp.ViewModels
 
     public async Task LoadAllExistingCurrencyIds()
     {
-      if (!_existingIds.Any())
+      if (_existingIds.Any())
         return;
 
       _existingIds = await _currencyAddServices.GetAllCurrenciesIdsAsync();
@@ -84,7 +137,7 @@ namespace CurrencyApp.ViewModels
 
     private async Task AddCurrency()
     {
-      if (!CanAdd)
+      if (CanAddCurrency())
         return;
 
       var newCurrency = new CurrencyCreateDto()
@@ -109,12 +162,24 @@ namespace CurrencyApp.ViewModels
       Nominal = string.Empty;
       Value = string.Empty;
       Previous = string.Empty;
-      ValidationMessage = string.Empty;
     }
 
-    private void CanAddCurrency(string Id)
+    private bool CanAddCurrency()
     {
-      CanAdd = string.IsNullOrWhiteSpace(Id) || !_existingIds.Contains(Id);
+      var isValidFields = !string.IsNullOrEmpty(Value) && decimal.TryParse(Value, out _);
+      isValidFields = isValidFields && !string.IsNullOrEmpty(Nominal) && int.TryParse(Nominal, out _);
+      isValidFields = isValidFields && (string.IsNullOrEmpty(Previous) || decimal.TryParse(Previous, out _));
+
+      var canAdd = new List<string>() { CharCode, NumCode, Id }.All(field => !string.IsNullOrWhiteSpace(field));
+
+      var isSomethingWrong = !(canAdd && isValidFields && !_existingIds.Contains(Id));
+
+      HasValidationError = isSomethingWrong;
+
+      if (isSomethingWrong)
+        ValidationMessage = "Some field contains wrong data or Id is duplicated";
+
+      return isSomethingWrong;
     }
 
     #endregion
