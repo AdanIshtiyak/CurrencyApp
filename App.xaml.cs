@@ -1,5 +1,8 @@
-﻿using CurrencyApp.Entity;
+using CurrencyApp.Entity;
 using CurrencyApp.Interfaces;
+using CurrencyApp.Repositories;
+using CurrencyApp.Repositories.Json;
+using CurrencyApp.Repositories.Sqlite;
 using CurrencyApp.Services;
 using CurrencyApp.ViewModels;
 using Microsoft.EntityFrameworkCore;
@@ -26,18 +29,28 @@ namespace CurrencyApp
 
       services.AddHttpClient<CurrencyServices>();
 
-      //Services
+      // Concrete repositories
+      services.AddScoped<SqliteCurrencyRepository>();
+      services.AddScoped<SqliteSessionRepository>();
+      services.AddSingleton<JsonCurrencyRepository>();
+      services.AddSingleton<JsonSessionRepository>();
+
+      // Dual-write repositories (write to both storages simultaneously, read from SQLite)
+      services.AddScoped<ICurrencyRepository, DualWriteCurrencyRepository>();
+      services.AddSingleton<ISessionRepository, DualWriteSessionRepository>();
+
+      // Services
       services.AddScoped<ICurrencyListServices, CurrencyServices>();
       services.AddScoped<ICurrencyAddServices, CurrencyServices>();
       services.AddSingleton<ISessionServices, SessionService>();
       services.AddScoped<ILocalSettingServices, LocalSettingsServices>();
 
-      //ViewModels
+      // ViewModels
       services.AddTransient<CurrencyListViewModel>();
       services.AddTransient<AddCurrencyViewModel>();
       services.AddTransient<SettingsViewModel>();
 
-      //Wimdows
+      // Windows
       services.AddTransient<MainWindow>();
 
       #endregion
