@@ -9,10 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Interfaces\**" />
-    <EmbeddedResource Remove="Interfaces\**" />
-    <None Remove="Interfaces\**" />
-    <Page Remove="Interfaces\**" />
+    <None Include="ViewModels\CurrencyListViewModel.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -24,6 +21,11 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.5" />
+    <PackageReference Include="MvvmLightLibs" Version="5.4.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Entity\Migrations\" />
   </ItemGroup>
 
 </Project>
