@@ -73,7 +73,7 @@
 
                             <!-- Info -->
                             <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                <TextBlock Text="Last session started"
+                                <TextBlock Text="Last session time"
                                            FontSize="12"
                                            Foreground="{StaticResource TextSecondaryBrush}"
                                            Margin="0,0,0,4"/>
@@ -181,7 +181,7 @@
                                     <TextBlock Text="JSON File"
                                                FontWeight="SemiBold"
                                                Margin="0,0,0,3"/>
-                                    <TextBlock Text="Stores data as a human-readable currencies.json file."
+                                    <TextBlock Text="Stores data as a human-readable settings.json file."
                                                FontSize="11"
                                                Foreground="{StaticResource TextSecondaryBrush}"/>
                                 </StackPanel>

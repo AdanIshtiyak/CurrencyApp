@@ -1,5 +1,4 @@
 ﻿using CurrencyApp.Entity.Models;
-using System.Collections.ObjectModel;
 
 namespace CurrencyApp.Interfaces
 {

@@ -2,25 +2,12 @@
 using CurrencyApp.Interfaces;
 using CurrencyApp.ViewModels.Helper;
 using GalaSoft.MvvmLight.Command;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using System.Windows.Input;
 
 namespace CurrencyApp.ViewModels
 {
-  public class AddCurrencyViewModel : INotifyPropertyChanged
+  public class AddCurrencyViewModel : NotifyPropertyChanged
   {
-    #region INotifyPropertyChanged implementation
-
-    public event PropertyChangedEventHandler PropertyChanged;
-
-    protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
-    {
-      PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-    }
-
-    #endregion
-
     #region View bindings
 
     public string CharCode
@@ -116,13 +103,15 @@ namespace CurrencyApp.ViewModels
     #endregion
 
     private readonly ICurrencyAddServices _currencyAddServices;
+    private readonly ISessionServices _sessionService;
 
-    public AddCurrencyViewModel(ICurrencyAddServices currencyAddServices)
+    public AddCurrencyViewModel(ICurrencyAddServices currencyAddServices, ISessionServices sessionService)
     {
       _currencyAddServices = currencyAddServices;
+      _sessionService = sessionService;
 
       ClearFormCommand = new RelayCommand(ClearForm);
-      AddCurrencyCommand = new AsyncRelayCommand(AddCurrency);
+      AddCurrencyCommand = new AsyncRelayCommand(AddCurrency, _sessionService);
     }
 
     public async Task LoadAllExistingCurrencyIds()

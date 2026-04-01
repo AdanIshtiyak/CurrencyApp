@@ -1,24 +1,15 @@
 ﻿using CurrencyApp.Entity.Models;
 using CurrencyApp.Interfaces;
-using CurrencyApp.Services;
 using CurrencyApp.ViewModels.Helper;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using System.Windows.Input;
 
 namespace CurrencyApp.ViewModels
 {
-  public class CurrencyListViewModel : INotifyPropertyChanged
+  public class CurrencyListViewModel : NotifyPropertyChanged
   {
-    public event PropertyChangedEventHandler PropertyChanged;
-
-    protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
-    {
-      PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-    }
-
     private readonly ICurrencyListServices _currencyListServices;
+    private readonly ISessionServices _sessionService;
 
     private ObservableCollection<Currency> _currencies = new ObservableCollection<Currency>();
 
@@ -46,13 +37,14 @@ namespace CurrencyApp.ViewModels
       }
     }
 
-    public CurrencyListViewModel(ICurrencyListServices currencyListServices)
+    public CurrencyListViewModel(ICurrencyListServices currencyListServices, ISessionServices sessionService)
     {
       _currencyListServices = currencyListServices;
+      _sessionService = sessionService;
 
       IsLoading = false;
-      RefreshCommand = new AsyncRelayCommand(RefreshData);
-      DeleteCurrencyCommand = new AsyncRelayCommand<Currency>(DeleteCurrency);
+      RefreshCommand = new AsyncRelayCommand(RefreshData, _sessionService);
+      DeleteCurrencyCommand = new AsyncRelayCommand<Currency>(DeleteCurrency, _sessionService);
     }
 
     public async Task InitCurrencies()

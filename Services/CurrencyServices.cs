@@ -1,8 +1,6 @@
-﻿using CurrencyApp.DTOs;
-using CurrencyApp.Entity;
+using CurrencyApp.DTOs;
 using CurrencyApp.Entity.Models;
 using CurrencyApp.Interfaces;
-using Microsoft.EntityFrameworkCore;
 using System.Net.Http;
 using System.Text.Json;
 
@@ -13,13 +11,12 @@ namespace CurrencyApp.Services
     private const string _apiUrl = "https://www.cbr-xml-daily.ru/daily_json.js";
 
     private readonly HttpClient _httpClient;
+    private readonly ICurrencyRepository _repository;
 
-    private readonly AppDbContext _context;
-
-    public CurrencyServices(AppDbContext context, HttpClient httpClient)
+    public CurrencyServices(HttpClient httpClient, ICurrencyRepository repository)
     {
-      _context = context;
       _httpClient = httpClient;
+      _repository = repository;
     }
 
     public async Task<List<Currency>> FetchCurrencyDataAsync()
@@ -30,21 +27,12 @@ namespace CurrencyApp.Services
       if (currencyDataDto == null)
         return [];
 
-      var currencies = _context.Currencies;
-
-      var changedCurrenciesIds = currencies
-        .Where(c => c.IsDeleted || c.IsCustom)
-        .Select(c => c.Id)
-        .ToList();
-
-      var currenciesForUpdate = currencies
-        .Where(c => !c.IsCustom && !c.IsDeleted)
-        .ToList();
+      var changedIds = (await _repository.GetAllIdsAsync(includeDeleted: true)).ToHashSet();
 
       var newCurrencies = currencyDataDto.Valute
         .Select(c => c.Value)
-        .Where(c => !changedCurrenciesIds.Contains(c.Id))
-        .Select(c => new Currency()
+        .Where(c => !changedIds.Contains(c.Id))
+        .Select(c => new Currency
         {
           Id = c.Id,
           CharCode = c.CharCode,
@@ -52,39 +40,27 @@ namespace CurrencyApp.Services
           NumCode = c.NumCode,
           Previous = c.Previous,
           Value = c.Value
-        }).ToList();
+        })
+        .ToList();
 
-      _context.Currencies.RemoveRange(currenciesForUpdate);
-      _context.Currencies.AddRange(newCurrencies);
-      await _context.SaveChangesAsync();
+      await _repository.DeleteNonCustomNonDeletedAsync();
 
-      var currenciesToDisplay = currencies.Where(c => !c.IsDeleted).ToList();
+      if (newCurrencies.Count > 0)
+        await _repository.AddRangeAsync(newCurrencies);
 
-      return currenciesToDisplay;
+      return await _repository.GetAllAsync();
     }
 
-    public async Task<List<Currency>> GetCurrenciesAsync()
-    {
-      var currencies = await _context.Currencies
-        .Where(c => !c.IsDeleted)
-        .AsNoTracking()
-        .ToListAsync();
-
-      return currencies;
-    }
+    public Task<List<Currency>> GetCurrenciesAsync() =>
+      _repository.GetAllAsync();
 
     public async Task CreateCustomCurrencyAsync(CurrencyCreateDto createDto)
     {
-      var currenciesIds = await _context.Currencies
-        .Where(c => !c.IsDeleted)
-        .Select(c => c.Id)
-        .AsNoTracking()
-        .ToListAsync();
+      var existingIds = await _repository.GetAllIdsAsync();
+      if (existingIds.Contains(createDto.Id))
+        return;
 
-      if (currenciesIds.Any(c => c == createDto.Id))
-        return; //todo: Сделать вывод ошибки
-
-      var newCurrency = new Currency()
+      await _repository.AddAsync(new Currency
       {
         Id = createDto.Id,
         CharCode = createDto.CharCode,
@@ -93,34 +69,23 @@ namespace CurrencyApp.Services
         Value = createDto.Value,
         Previous = createDto.Previous,
         IsCustom = true
-      };
-
-      _context.Currencies.Add(newCurrency);
-      await _context.SaveChangesAsync();
+      });
     }
 
     public async Task DeleteCurrencyAsync(int currencyInternalId)
     {
-      var currency = await _context.Currencies.FirstOrDefaultAsync(c => c.InternalId == currencyInternalId);
-
+      var currency = await _repository.GetByInternalIdAsync(currencyInternalId);
       if (currency == null)
         return;
 
       currency.IsDeleted = true;
-
-      _context.Currencies.Update(currency);
-      await _context.SaveChangesAsync();
+      await _repository.UpdateAsync(currency);
     }
 
     public async Task<HashSet<string>> GetAllCurrenciesIdsAsync()
     {
-      var hashSet = _context.Currencies
-        .Where(c => !c.IsDeleted)
-        .AsNoTracking()
-        .Select(c => c.Id)
-        .ToHashSet();
-
-      return hashSet;
+      var ids = await _repository.GetAllIdsAsync();
+      return [.. ids];
     }
   }
 }

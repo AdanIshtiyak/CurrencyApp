@@ -9,7 +9,7 @@ namespace CurrencyApp.Views
     public SettingsPage()
     {
       InitializeComponent();
-      //DataContext = App.ServiceProvider.GetRequiredService<SettingsViewModel>();
+      DataContext = App.ServiceProvider.GetRequiredService<SettingsViewModel>();
     }
   }
 }
