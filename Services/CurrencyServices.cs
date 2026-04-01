@@ -1,13 +1,14 @@
 ﻿using CurrencyApp.DTOs;
 using CurrencyApp.Entity;
 using CurrencyApp.Entity.Models;
+using CurrencyApp.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System.Net.Http;
 using System.Text.Json;
 
 namespace CurrencyApp.Services
 {
-  public class CurrencyServices
+  public class CurrencyServices : ICurrencyListServices, ICurrencyAddServices
   {
     private const string _apiUrl = "https://www.cbr-xml-daily.ru/daily_json.js";
 
@@ -62,7 +63,17 @@ namespace CurrencyApp.Services
       return currenciesToDisplay;
     }
 
-    public async Task CreateCustomCurrency(CurrencyCreateDto createDto)
+    public async Task<List<Currency>> GetCurrenciesAsync()
+    {
+      var currencies = await _context.Currencies
+        .Where(c => !c.IsDeleted)
+        .AsNoTracking()
+        .ToListAsync();
+
+      return currencies;
+    }
+
+    public async Task CreateCustomCurrencyAsync(CurrencyCreateDto createDto)
     {
       var currenciesIds = await _context.Currencies
         .Where(c => !c.IsDeleted)
@@ -88,7 +99,7 @@ namespace CurrencyApp.Services
       await _context.SaveChangesAsync();
     }
 
-    public async Task DeleteCurrency(int currencyInternalId)
+    public async Task DeleteCurrencyAsync(int currencyInternalId)
     {
       var currency = await _context.Currencies.FirstOrDefaultAsync(c => c.InternalId == currencyInternalId);
 
@@ -99,6 +110,17 @@ namespace CurrencyApp.Services
 
       _context.Currencies.Update(currency);
       await _context.SaveChangesAsync();
+    }
+
+    public async Task<HashSet<string>> GetAllCurrenciesIdsAsync()
+    {
+      var hashSet = _context.Currencies
+        .Where(c => !c.IsDeleted)
+        .AsNoTracking()
+        .Select(c => c.Id)
+        .ToHashSet();
+
+      return hashSet;
     }
   }
 }

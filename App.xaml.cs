@@ -1,4 +1,5 @@
 ﻿using CurrencyApp.Entity;
+using CurrencyApp.Interfaces;
 using CurrencyApp.Services;
 using CurrencyApp.ViewModels;
 using Microsoft.EntityFrameworkCore;
@@ -26,11 +27,12 @@ namespace CurrencyApp
       services.AddHttpClient();
 
       //Services
-      services.AddScoped<CurrencyServices>();
+      services.AddScoped<ICurrencyListServices, CurrencyServices>();
+      services.AddScoped<ICurrencyAddServices, CurrencyServices>();
 
       //ViewModels
       services.AddTransient<CurrencyListViewModel>();
-      //services.AddTransient<AddCurrencyViewModel>();
+      services.AddTransient<AddCurrencyViewModel>();
       //services.AddTransient<SettingsViewModel>();
 
       //Wimdows
