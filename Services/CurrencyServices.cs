@@ -14,12 +14,12 @@ namespace CurrencyApp.Services
 
     private readonly HttpClient _httpClient;
 
-    private readonly AppDbContext _context;
+    private readonly IDbContextFactory<AppDbContext> _context;
 
-    public CurrencyServices(AppDbContext context, HttpClient httpClient)
+    public CurrencyServices(HttpClient httpClient, IDbContextFactory<AppDbContext> context)
     {
-      _context = context;
       _httpClient = httpClient;
+      _context = context;
     }
 
     public async Task<List<Currency>> FetchCurrencyDataAsync()
@@ -30,16 +30,16 @@ namespace CurrencyApp.Services
       if (currencyDataDto == null)
         return [];
 
-      var currencies = _context.Currencies;
+      using var context = await _context.CreateDbContextAsync();
 
-      var changedCurrenciesIds = currencies
+      var changedCurrenciesIds = await context.Currencies
         .Where(c => c.IsDeleted || c.IsCustom)
         .Select(c => c.Id)
-        .ToList();
+        .ToListAsync();
 
-      var currenciesForUpdate = currencies
+      var currenciesForUpdate = await context.Currencies
         .Where(c => !c.IsCustom && !c.IsDeleted)
-        .ToList();
+        .ToListAsync();
 
       var newCurrencies = currencyDataDto.Valute
         .Select(c => c.Value)
@@ -54,18 +54,25 @@ namespace CurrencyApp.Services
           Value = c.Value
         }).ToList();
 
-      _context.Currencies.RemoveRange(currenciesForUpdate);
-      _context.Currencies.AddRange(newCurrencies);
-      await _context.SaveChangesAsync();
+      await context.Currencies
+        .Where(c => !c.IsCustom && !c.IsDeleted)
+        .ExecuteDeleteAsync();
 
-      var currenciesToDisplay = currencies.Where(c => !c.IsDeleted).ToList();
+      context.Currencies.AddRange(newCurrencies);
+      await context.SaveChangesAsync();
+
+      var currenciesToDisplay = await context.Currencies
+        .Where(c => !c.IsDeleted)
+        .ToListAsync();
 
       return currenciesToDisplay;
     }
 
     public async Task<List<Currency>> GetCurrenciesAsync()
     {
-      var currencies = await _context.Currencies
+      using var context = await _context.CreateDbContextAsync();
+
+      var currencies = await context.Currencies
         .Where(c => !c.IsDeleted)
         .AsNoTracking()
         .ToListAsync();
@@ -75,14 +82,16 @@ namespace CurrencyApp.Services
 
     public async Task CreateCustomCurrencyAsync(CurrencyCreateDto createDto)
     {
-      var currenciesIds = await _context.Currencies
+      using var context = await _context.CreateDbContextAsync();
+
+      var currenciesIds = await context.Currencies
         .Where(c => !c.IsDeleted)
         .Select(c => c.Id)
         .AsNoTracking()
         .ToListAsync();
 
       if (currenciesIds.Any(c => c == createDto.Id))
-        return; //todo: Сделать вывод ошибки
+        return;
 
       var newCurrency = new Currency()
       {
@@ -95,29 +104,33 @@ namespace CurrencyApp.Services
         IsCustom = true
       };
 
-      _context.Currencies.Add(newCurrency);
-      await _context.SaveChangesAsync();
+      context.Currencies.Add(newCurrency);
+      await context.SaveChangesAsync();
     }
 
     public async Task DeleteCurrencyAsync(int currencyInternalId)
     {
-      var currency = await _context.Currencies.FirstOrDefaultAsync(c => c.InternalId == currencyInternalId);
+      using var context = await _context.CreateDbContextAsync();
+
+      var currency = await context.Currencies.FirstOrDefaultAsync(c => c.InternalId == currencyInternalId);
 
       if (currency == null)
         return;
 
       currency.IsDeleted = true;
 
-      _context.Currencies.Update(currency);
-      await _context.SaveChangesAsync();
+      context.Currencies.Update(currency);
+      await context.SaveChangesAsync();
     }
 
     public async Task<HashSet<string>> GetAllCurrenciesIdsAsync()
     {
-      var hashSet = _context.Currencies
+      using var context = await _context.CreateDbContextAsync();
+
+      var hashSet = (await context.Currencies
         .Where(c => !c.IsDeleted)
-        .AsNoTracking()
         .Select(c => c.Id)
+        .ToListAsync())
         .ToHashSet();
 
       return hashSet;

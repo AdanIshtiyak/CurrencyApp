@@ -21,19 +21,21 @@ namespace CurrencyApp
 
       #region DI
 
-      services.AddDbContext<AppDbContext>(options =>
-        options.UseSqlite("Data Source=data.db"));
+      services.AddDbContextFactory<AppDbContext>(options =>
+       options.UseSqlite("Data Source=data.db"));
 
-      services.AddHttpClient();
+      services.AddHttpClient<CurrencyServices>();
 
       //Services
       services.AddScoped<ICurrencyListServices, CurrencyServices>();
       services.AddScoped<ICurrencyAddServices, CurrencyServices>();
+      services.AddSingleton<ISessionServices, SessionService>();
+      services.AddScoped<ILocalSettingServices, LocalSettingsServices>();
 
       //ViewModels
       services.AddTransient<CurrencyListViewModel>();
       services.AddTransient<AddCurrencyViewModel>();
-      //services.AddTransient<SettingsViewModel>();
+      services.AddTransient<SettingsViewModel>();
 
       //Wimdows
       services.AddTransient<MainWindow>();

@@ -1,5 +1,6 @@
 using CurrencyApp.ViewModels;
 using CurrencyApp.Views;
+using Microsoft.Extensions.DependencyInjection;
 using System.Windows;
 
 namespace CurrencyApp
@@ -9,6 +10,7 @@ namespace CurrencyApp
     public MainWindow()
     {
       InitializeComponent();
+      DataContext = App.ServiceProvider.GetRequiredService<SettingsViewModel>();
 
       // Open Currencies page by default on startup
       MainFrame.Navigate(new CurrencyListPage());
